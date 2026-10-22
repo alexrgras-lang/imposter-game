@@ -1,0 +1,383 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#1b1220">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>Builders Club Imposter</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;800&family=Figtree:wght@400;600;700&display=swap">
+<style>
+:root { padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }
+body { margin: 0; }
+[hidden] { display: none !important; }
+/* Layout: one-screen pass-the-phone app, a single centered column of stages (setup, pass, reveal, table talk, verdict). Deliberately dark for a dim dinner table. */
+:root {
+  --bg: #1b1220;
+  --panel: #281b2e;
+  --panel-2: #33243a;
+  --line: #4a3752;
+  --fg: #f5ecf2;
+  --muted: #b9a6bf;
+  --brass: #f2b134;
+  --brass-ink: #2a1a05;
+  --red: #ff5d5d;
+  --font-display: "Unbounded", "Arial Black", system-ui, sans-serif;
+  --font-body: "Figtree", system-ui, -apple-system, "Segoe UI", sans-serif;
+  color-scheme: dark;
+}
+html, body { height: 100%; }
+body {
+  background: var(--bg); color: var(--fg); font-family: var(--font-body); font-size: 16px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  -webkit-tap-highlight-color: transparent;
+}
+.app { max-width: 520px; margin: 0 auto; padding-block: 20px 32px; display: flex; flex-direction: column; gap: 20px; min-height: 100%; box-sizing: border-box; }
+header { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
+.brand { font-family: var(--font-display); font-weight: 800; font-size: 20px; letter-spacing: -0.01em; }
+.brand span { color: var(--brass); }
+.round-tag { font-size: 12px; text-transform: uppercase; letter-spacing: 0.12em; color: var(--muted); }
+h2 { font-family: var(--font-display); font-weight: 500; font-size: 22px; margin: 0; text-wrap: balance; }
+.label { font-size: 12px; text-transform: uppercase; letter-spacing: 0.12em; color: var(--muted); font-weight: 600; }
+.section { display: flex; flex-direction: column; gap: 10px; }
+.stage { display: flex; flex-direction: column; gap: 22px; }
+.hint { color: var(--muted); font-size: 14px; line-height: 1.5; margin: 0; }
+
+/* Players */
+.players { display: flex; flex-direction: column; gap: 8px; }
+.player-row { display: flex; gap: 8px; align-items: center; }
+.player-row input { flex: 1; min-width: 0; }
+input[type="text"] {
+  background: var(--panel); border: 1px solid var(--line); color: var(--fg); border-radius: 10px;
+  padding: 11px 12px; font: inherit; font-size: 16px;
+}
+input[type="text"]:focus-visible, button:focus-visible, .chip:focus-within { outline: 2px solid var(--brass); outline-offset: 2px; }
+.x { background: none; border: 0; color: var(--muted); font-size: 22px; width: 36px; height: 36px; cursor: pointer; border-radius: 8px; }
+.x:hover { color: var(--fg); background: var(--panel); }
+
+/* Steppers + chips */
+.row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.stepper { display: flex; align-items: center; justify-content: space-between; background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 6px; }
+.stepper button { width: 40px; height: 40px; border-radius: 9px; border: 0; background: var(--panel-2); color: var(--fg); font-size: 20px; cursor: pointer; }
+.stepper output { font-family: var(--font-display); font-size: 20px; font-variant-numeric: tabular-nums; }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip { position: relative; }
+.chip input { position: absolute; opacity: 0; inset: 0; cursor: pointer; }
+.chip span { display: inline-block; padding: 9px 13px; border-radius: 999px; border: 1px solid var(--line); background: var(--panel); font-size: 14px; font-weight: 600; color: var(--muted); }
+.chip input:checked + span { background: var(--brass); color: var(--brass-ink); border-color: var(--brass); }
+.toggle { display: flex; gap: 12px; align-items: flex-start; background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; cursor: pointer; }
+.toggle input { width: 20px; height: 20px; accent-color: var(--brass); margin: 2px 0 0; flex: none; }
+.toggle b { display: block; font-weight: 600; }
+.toggle small { color: var(--muted); font-size: 13px; }
+
+/* Buttons */
+.btn { font: inherit; font-weight: 700; font-size: 17px; border: 0; border-radius: 14px; padding: 16px 18px; cursor: pointer; width: 100%; }
+.btn.primary { background: var(--brass); color: var(--brass-ink); }
+.btn.ghost { background: transparent; color: var(--fg); border: 1px solid var(--line); }
+.btn.danger { background: var(--red); color: #2b0606; }
+.btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.btns { display: flex; flex-direction: column; gap: 10px; }
+.error { color: var(--red); font-size: 14px; margin: 0; }
+
+/* Pass + reveal */
+.pass { text-align: center; padding-block: 40px 8px; display: flex; flex-direction: column; gap: 14px; align-items: center; }
+.pass .who { font-family: var(--font-display); font-weight: 800; font-size: clamp(34px, 11vw, 52px); line-height: 1.05; text-wrap: balance; color: var(--brass); overflow-wrap: anywhere; }
+.progress { display: flex; gap: 5px; justify-content: center; flex-wrap: wrap; }
+.progress i { width: 8px; height: 8px; border-radius: 50%; background: var(--line); }
+.progress i.done { background: var(--brass); }
+.card {
+  position: relative; border-radius: 22px; border: 1px solid var(--line); background: var(--panel);
+  min-height: 300px; display: flex; flex-direction: column; align-items: center; justify-content: center;
+  text-align: center; padding: 28px 20px; gap: 12px; user-select: none; -webkit-user-select: none; touch-action: none; cursor: pointer;
+}
+.card .cover { display: flex; flex-direction: column; gap: 10px; align-items: center; }
+.card .cover .big { font-family: var(--font-display); font-size: 22px; font-weight: 500; }
+.card .fp { width: 64px; height: 64px; border-radius: 50%; border: 2px dashed var(--brass); display: grid; place-items: center; color: var(--brass); font-family: var(--font-display); font-size: 13px; }
+.card .secret { display: none; flex-direction: column; gap: 10px; align-items: center; }
+.card.open .cover { display: none; }
+.card.open .secret { display: flex; }
+.card.open.imp { background: var(--red); border-color: var(--red); color: #2b0606; }
+.card.open.imp .label { color: #4a0d0d; }
+.secret .word { font-family: var(--font-display); font-weight: 800; font-size: clamp(30px, 10vw, 46px); line-height: 1.05; overflow-wrap: anywhere; text-wrap: balance; }
+.secret .sub { font-size: 15px; }
+
+/* Table talk */
+.order { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; counter-reset: o; }
+.order li { counter-increment: o; display: flex; gap: 12px; align-items: center; padding: 10px 12px; background: var(--panel); border-radius: 10px; font-weight: 600; }
+.order li::before { content: counter(o); font-family: var(--font-display); font-size: 13px; color: var(--brass); width: 18px; font-variant-numeric: tabular-nums; }
+.order li.first { outline: 1px solid var(--brass); }
+.timer { text-align: center; display: flex; flex-direction: column; gap: 8px; align-items: center; }
+.timer .t { font-family: var(--font-display); font-weight: 800; font-size: 56px; font-variant-numeric: tabular-nums; letter-spacing: -0.02em; }
+.timer .t.low { color: var(--red); }
+.timer-btns { display: flex; gap: 8px; width: 100%; }
+.timer-btns .btn { padding: 12px; font-size: 15px; }
+.rules { background: var(--panel); border-radius: 14px; padding: 14px 16px; }
+.rules ol { margin: 6px 0 0; padding-left: 20px; display: flex; flex-direction: column; gap: 6px; color: var(--muted); font-size: 14px; line-height: 1.45; }
+
+/* Verdict */
+.verdict { text-align: center; display: flex; flex-direction: column; gap: 10px; padding-block: 16px; }
+.verdict .names { font-family: var(--font-display); font-weight: 800; font-size: clamp(30px, 10vw, 44px); color: var(--red); line-height: 1.1; overflow-wrap: anywhere; }
+.verdict .w { font-family: var(--font-display); font-size: 24px; color: var(--brass); }
+.hold-reveal { position: relative; }
+.confirm-box { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 14px; display: flex; flex-direction: column; gap: 10px; }
+
+@media (prefers-reduced-motion: no-preference) {
+  .stage { animation: in 0.25s ease-out; }
+  @keyframes in { from { opacity: 0.4; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+}
+</style>
+</head>
+<body>
+
+<div class="app">
+  <header>
+    <div class="brand">Imposter<span>.</span></div>
+    <div class="round-tag" id="roundTag">Founders' Dinner</div>
+  </header>
+  <main id="view"></main>
+</div>
+
+<script>
+const BANK = {
+  "Startup life": ["Pitch deck","Term sheet","Cap table","Unicorn","Pivot","SAFE note","Burn rate","Board meeting","Demo day","Down round","Stealth mode","Series A","Cold email","Hackathon","Seed round","Product launch","Co-founder","Runway","Angel investor","Exit","Due diligence","Accelerator","Churn","Stock options","Coworking space","Bridge round","Hockey stick","Lead investor","Free trial","Napkin sketch"],
+  "Houston": ["Buc-ee's","Astros","Rodeo","Galleria","Crawfish boil","Whataburger","Bayou","Kolache","Space Center","Montrose","Beltway 8","Rothko Chapel","Hurricane","Toyota Center","Hermann Park","Kemah Boardwalk","Medical Center","Ship Channel","Tex-Mex","Galveston","Humidity","Traffic on 610","Mattress Mack","Minute Maid Park","Art Car Parade"],
+  "Energy": ["Oil rig","Refinery","Pipeline","Fracking","Solar farm","Wind turbine","Barrel","Offshore platform","Gas station","Battery","Power grid","Hydrogen","Drilling","Tanker ship","Carbon capture","Landman","Royalty check","Permian Basin","Nuclear plant","Blackout"],
+  "Food & drink": ["Tasting menu","Oyster","Espresso","Brisket","Sommelier","Taco truck","Ramen","Old Fashioned","Food truck","Croissant","Sushi","Pizza oven","Margarita","Steakhouse","Brunch","Bread starter","Chef's table","Happy hour","Truffle","Doughnut"],
+  "Everyday": ["Airport","Dentist","Wedding","Gym","Library","Hospital","Zoo","Casino","Cruise ship","Movie theater","Camping","Car wash","Elevator","Museum","Beach","Theme park","Bowling alley","Karaoke","Haircut","Garage sale","Road trip","Hotel lobby","Fire drill","Laundromat"],
+  "Famous people": ["Elon Musk","Beyoncé","Taylor Swift","Oprah","Jeff Bezos","Simone Biles","Steve Jobs","Mark Zuckerberg","Barack Obama","Warren Buffett","Serena Williams","Tom Brady","Lady Gaga","Albert Einstein","Shark Tank shark","Neil Armstrong"]
+};
+
+const KEY = "imposter-setup-v1";
+const defaults = { players: ["Alex","Player 2","Player 3","Player 4","Player 5","Player 6"], imposters: 1, timer: 180, cats: ["Startup life","Houston","Energy","Food & drink"], hint: true };
+let setup = load();
+let game = null; // {round, word, cat, order:[names], imps:Set idx, turn, seen, first, used:[]}
+let usedWords = [];
+let timerId = null, timeLeft = 0, timerRunning = false;
+let stage = "setup";
+
+function load() {
+  try { const s = JSON.parse(localStorage.getItem(KEY)); if (s && Array.isArray(s.players)) return { ...defaults, ...s }; } catch (e) {}
+  return JSON.parse(JSON.stringify(defaults));
+}
+function save() { try { localStorage.setItem(KEY, JSON.stringify(setup)); } catch (e) {} }
+const $ = (s) => document.querySelector(s);
+const esc = (s) => String(s).replace(/[&<>"']/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c]));
+const rand = (n) => { const a = new Uint32Array(1); crypto.getRandomValues(a); return a[0] % n; };
+function shuffle(a) { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = rand(i + 1); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+const fmt = (s) => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
+
+function maxImps() { return Math.max(1, Math.floor((setup.players.length - 1) / 3)); }
+
+function render() {
+  const v = $("#view");
+  $("#roundTag").textContent = game ? `Round ${game.round}` : "Founders' Dinner";
+  if (stage === "setup") v.innerHTML = setupView();
+  if (stage === "pass") v.innerHTML = passView();
+  if (stage === "reveal") v.innerHTML = revealView();
+  if (stage === "talk") v.innerHTML = talkView();
+  if (stage === "verdict") v.innerHTML = verdictView();
+  bind();
+}
+
+function setupView() {
+  const names = setup.players.map((p, i) => `
+    <div class="player-row">
+      <input type="text" id="p${i}" data-i="${i}" value="${esc(p)}" maxlength="24" autocomplete="off" aria-label="Player ${i + 1} name">
+      <button class="x" data-del="${i}" aria-label="Remove ${esc(p)}">×</button>
+    </div>`).join("");
+  const cats = Object.keys(BANK).map(c => `
+    <label class="chip"><input type="checkbox" id="cat-${c.replace(/\W/g, "")}" data-cat="${esc(c)}" ${setup.cats.includes(c) ? "checked" : ""}><span>${esc(c)}</span></label>`).join("");
+  const ok = setup.players.filter(p => p.trim()).length >= 3 && setup.cats.length > 0;
+  return `<div class="stage">
+    <div class="section">
+      <h2>Who's at the table?</h2>
+      <p class="hint">Everyone but the imposter gets the same secret word. Pass the phone around, give one-word clues, then vote.</p>
+    </div>
+    <div class="section">
+      <div class="label">Players · ${setup.players.length}</div>
+      <div class="players">${names}</div>
+      <button class="btn ghost" id="add">Add player</button>
+    </div>
+    <div class="row2">
+      <div class="section">
+        <div class="label">Imposters</div>
+        <div class="stepper"><button id="impMinus" aria-label="Fewer imposters">−</button><output id="impOut">${setup.imposters}</output><button id="impPlus" aria-label="More imposters">+</button></div>
+      </div>
+      <div class="section">
+        <div class="label">Talk timer</div>
+        <div class="stepper"><button id="tMinus" aria-label="Less time">−</button><output id="tOut">${fmt(setup.timer)}</output><button id="tPlus" aria-label="More time">+</button></div>
+      </div>
+    </div>
+    <div class="section">
+      <div class="label">Word categories</div>
+      <div class="chips">${cats}</div>
+    </div>
+    <label class="toggle" for="hint"><input type="checkbox" id="hint" ${setup.hint ? "checked" : ""}><div><b>Tell the imposter the category</b><small>Makes it fair to bluff. Turn off for a harder round.</small></div></label>
+    ${ok ? "" : `<p class="error">Add at least 3 players and pick one category to start.</p>`}
+    <button class="btn primary" id="start" ${ok ? "" : "disabled"}>Deal the cards</button>
+  </div>`;
+}
+
+function newRound() {
+  const players = setup.players.map(p => p.trim()).filter(Boolean);
+  const pool = setup.cats.flatMap(c => BANK[c].map(w => ({ w, c })));
+  let fresh = pool.filter(x => !usedWords.includes(x.w));
+  if (!fresh.length) { usedWords = []; fresh = pool; }
+  const pick = fresh[rand(fresh.length)];
+  usedWords.push(pick.w);
+  const n = Math.min(setup.imposters, maxImps());
+  const imps = shuffle(players.map((_, i) => i)).slice(0, n);
+  game = { round: (game?.round || 0) + 1, word: pick.w, cat: pick.c, players, imps, turn: 0, seen: false, first: rand(players.length), guessed: null };
+  stage = "pass";
+  stopTimer();
+  render();
+}
+
+function dots() { return `<div class="progress">${game.players.map((_, i) => `<i class="${i < game.turn ? "done" : ""}"></i>`).join("")}</div>`; }
+
+function passView() {
+  return `<div class="stage">
+    <div class="pass">
+      <div class="label">Hand the phone to</div>
+      <div class="who">${esc(game.players[game.turn])}</div>
+      ${dots()}
+    </div>
+    <p class="hint" style="text-align:center">Everyone else, look away.</p>
+    <button class="btn primary" id="iam">I'm ${esc(game.players[game.turn])}</button>
+  </div>`;
+}
+
+function revealView() {
+  const isImp = game.imps.includes(game.turn);
+  const last = game.turn === game.players.length - 1;
+  const secret = isImp
+    ? `<div class="label">You are</div><div class="word">The imposter</div><div class="sub">${setup.hint ? `Category: <b>${esc(game.cat)}</b>. ` : ""}Blend in and figure out the word.</div>`
+    : `<div class="label">The word is</div><div class="word">${esc(game.word)}</div><div class="sub">Category: ${esc(game.cat)}</div>`;
+  return `<div class="stage">
+    <div class="section" style="text-align:center"><h2>${esc(game.players[game.turn])}</h2><p class="hint">Press and hold the card to see your role. Let go to hide it.</p></div>
+    <div class="card ${isImp ? "imp" : ""}" id="card" role="button" aria-label="Press and hold to reveal">
+      <div class="cover"><div class="fp">HOLD</div><div class="big">Your card</div></div>
+      <div class="secret">${secret}</div>
+    </div>
+    <button class="btn primary" id="next" ${game.seen ? "" : "disabled"}>${last ? "Everyone's seen it. Start talking" : "Got it. Hide and pass"}</button>
+  </div>`;
+}
+
+function talkView() {
+  const n = game.players.length, f = game.first;
+  const order = Array.from({ length: n }, (_, k) => game.players[(f + k) % n]);
+  return `<div class="stage">
+    <div class="section"><h2>${esc(game.players[f])} goes first</h2><p class="hint">Go around the table in this order. Each person says one word or short phrase about the secret word.</p></div>
+    <div class="timer">
+      <div class="t ${timeLeft <= 15 ? "low" : ""}" id="clock">${fmt(timeLeft)}</div>
+      <div class="timer-btns">
+        <button class="btn ghost" id="tToggle">${timerRunning ? "Pause" : (timeLeft < setup.timer ? "Resume" : "Start timer")}</button>
+        <button class="btn ghost" id="tReset">Reset</button>
+      </div>
+    </div>
+    <ol class="order">${order.map((p, i) => `<li class="${i === 0 ? "first" : ""}">${esc(p)}</li>`).join("")}</ol>
+    <div class="rules"><div class="label">How it plays</div><ol>
+      <li>Two laps of clues usually does it. Too specific and the imposter learns the word.</li>
+      <li>Then everyone points at their suspect on three.</li>
+      <li>If the table catches the imposter, they get one guess at the word to steal the win.</li>
+    </ol></div>
+    <div class="btns">
+      <button class="btn danger" id="toVerdict">Reveal the imposter</button>
+    </div>
+  </div>`;
+}
+
+function verdictView() {
+  const names = game.imps.map(i => esc(game.players[i])).join(" & ");
+  const plural = game.imps.length > 1;
+  return `<div class="stage">
+    <div class="verdict">
+      <div class="label">The imposter${plural ? "s were" : " was"}</div>
+      <div class="names">${names}</div>
+      <div class="label" style="margin-top:12px">The word was</div>
+      <div class="w">${esc(game.word)}</div>
+    </div>
+    <div class="rules"><div class="label">Scoring, if you're keeping it</div><ol>
+      <li>Imposter not caught: imposter wins.</li>
+      <li>Imposter caught but guesses the word: imposter steals it.</li>
+      <li>Imposter caught and misses the word: the table wins.</li>
+    </ol></div>
+    <div class="btns">
+      <button class="btn primary" id="again">Next round, same table</button>
+      <button class="btn ghost" id="edit">Change players or settings</button>
+    </div>
+  </div>`;
+}
+
+function startTimer() {
+  if (timerRunning || timeLeft <= 0) return;
+  timerRunning = true;
+  timerId = setInterval(() => {
+    timeLeft = Math.max(0, timeLeft - 1);
+    const c = $("#clock");
+    if (c) { c.textContent = fmt(timeLeft); c.classList.toggle("low", timeLeft <= 15); }
+    if (timeLeft === 0) { stopTimer(); buzz(); render(); }
+  }, 1000);
+}
+function stopTimer() { clearInterval(timerId); timerId = null; timerRunning = false; }
+function buzz() {
+  try { navigator.vibrate && navigator.vibrate([200, 100, 200]); } catch (e) {}
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    [0, 0.25].forEach(t => { const o = ctx.createOscillator(), g = ctx.createGain(); o.frequency.value = 660; g.gain.value = 0.15; o.connect(g); g.connect(ctx.destination); o.start(ctx.currentTime + t); o.stop(ctx.currentTime + t + 0.18); });
+  } catch (e) {}
+}
+
+function bind() {
+  if (stage === "setup") {
+    document.querySelectorAll("[data-i]").forEach(inp => inp.addEventListener("input", e => { setup.players[+e.target.dataset.i] = e.target.value; save(); }));
+    document.querySelectorAll("[data-i]").forEach(inp => inp.addEventListener("change", () => render()));
+    document.querySelectorAll("[data-del]").forEach(b => b.onclick = () => { setup.players.splice(+b.dataset.del, 1); setup.imposters = Math.min(setup.imposters, maxImps()); save(); render(); });
+    $("#add").onclick = () => { setup.players.push(""); save(); render(); const l = document.querySelector(`#p${setup.players.length - 1}`); l && l.focus(); };
+    $("#impMinus").onclick = () => { setup.imposters = Math.max(1, setup.imposters - 1); save(); render(); };
+    $("#impPlus").onclick = () => { setup.imposters = Math.min(maxImps(), setup.imposters + 1); save(); render(); };
+    $("#tMinus").onclick = () => { setup.timer = Math.max(30, setup.timer - 30); save(); render(); };
+    $("#tPlus").onclick = () => { setup.timer = Math.min(600, setup.timer + 30); save(); render(); };
+    document.querySelectorAll("[data-cat]").forEach(c => c.onchange = () => { const k = c.dataset.cat; setup.cats = c.checked ? [...setup.cats, k] : setup.cats.filter(x => x !== k); save(); render(); });
+    $("#hint").onchange = (e) => { setup.hint = e.target.checked; save(); };
+    $("#start").onclick = () => { setup.players = setup.players.filter(p => p.trim()); save(); newRound(); };
+  }
+  if (stage === "pass") $("#iam").onclick = () => { game.seen = false; stage = "reveal"; render(); };
+  if (stage === "reveal") {
+    const card = $("#card");
+    const open = (e) => { e.preventDefault(); card.classList.add("open"); if (!game.seen) { game.seen = true; $("#next").disabled = false; } };
+    const close = () => card.classList.remove("open");
+    card.addEventListener("pointerdown", open);
+    ["pointerup", "pointerleave", "pointercancel"].forEach(ev => card.addEventListener(ev, close));
+    card.addEventListener("contextmenu", e => e.preventDefault());
+    card.tabIndex = 0;
+    card.addEventListener("keydown", e => { if (e.key === " " || e.key === "Enter") open(e); });
+    card.addEventListener("keyup", close);
+    $("#next").onclick = () => {
+      game.turn++;
+      if (game.turn >= game.players.length) { timeLeft = setup.timer; stage = "talk"; } else { stage = "pass"; }
+      render();
+    };
+  }
+  if (stage === "talk") {
+    $("#tToggle").onclick = () => { timerRunning ? stopTimer() : startTimer(); render(); };
+    $("#tReset").onclick = () => { stopTimer(); timeLeft = setup.timer; render(); };
+    $("#toVerdict").onclick = () => { stopTimer(); stage = "verdict"; render(); };
+  }
+  if (stage === "verdict") {
+    $("#again").onclick = () => newRound();
+    $("#edit").onclick = () => { stage = "setup"; render(); };
+  }
+}
+
+function start(data) {
+  if (data && data.stage) { stage = data.stage; game = data.game; usedWords = data.usedWords || []; timeLeft = data.timeLeft || 0; if (stage === "reveal") stage = "pass"; }
+  window.claude?.hot?.snapshot?.(() => ({ stage, game, usedWords, timeLeft }));
+  render();
+}
+window.claude?.hot?.ready ? window.claude.hot.ready(start) : start(window.claude?.hot?.data ?? {});
+</script>
+</body>
+</html>
