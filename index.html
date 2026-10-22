@@ -98,8 +98,6 @@ input[type="text"]:focus-visible, button:focus-visible, .chip:focus-within { out
 .card .secret { display: none; flex-direction: column; gap: 10px; align-items: center; }
 .card.open .cover { display: none; }
 .card.open .secret { display: flex; }
-.card.open.imp { background: var(--red); border-color: var(--red); color: #2b0606; }
-.card.open.imp .label { color: #4a0d0d; }
 .secret .word { font-family: var(--font-display); font-weight: 800; font-size: clamp(30px, 10vw, 46px); line-height: 1.05; overflow-wrap: anywhere; text-wrap: balance; }
 .secret .sub { font-size: 15px; }
 
@@ -253,7 +251,7 @@ function revealView() {
   const isImp = game.imps.includes(game.turn);
   const last = game.turn === game.players.length - 1;
   const secret = isImp
-    ? `<div class="label">You are</div><div class="word">The imposter</div><div class="sub">${setup.hint ? `Category: <b>${esc(game.cat)}</b>. ` : ""}Blend in and figure out the word.</div>`
+    ? `<div class="label">You are</div><div class="word">The imposter</div><div class="sub">${setup.hint ? `Category: ${esc(game.cat)}` : "Blend in and figure out the word"}</div>`
     : `<div class="label">The word is</div><div class="word">${esc(game.word)}</div><div class="sub">Category: ${esc(game.cat)}</div>`;
   return `<div class="stage">
     <div class="section" style="text-align:center"><h2>${esc(game.players[game.turn])}</h2><p class="hint">Press and hold the card to see your role. Let go to hide it.</p></div>
